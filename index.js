@@ -1,11 +1,35 @@
 const core = require('@pigi/core')
-const wallet = require('@pigi/wallet')
-const memdown = require('memdown')
+const ovm = require('@pigi/wallet')
+const ethers = require('ethers')
 
-const db = new core.BaseDB(memdown())
-const unipigWallet = new wallet.UnipigWallet(db)
-unipigWallet.rollup.connect(new core.SimpleClient('http://localhost:3000'))
+let unipigWallet
+let wallet
 
-const accountAddress = 'mocked account'
+async function initialize () {
+  wallet = ethers.Wallet.createRandom()
 
-unipigWallet.getBalances(accountAddress).then((res) => { console.log('Heres someones balance!', res) })
+  const signatureDB = core.newInMemoryDB()
+  const signedByDB = new core.SignedByDB(signatureDB)
+  const signedByDecider = new core.SignedByDecider(
+    signedByDB,
+    Buffer.from(wallet.address)
+  )
+  const rollupStateSolver = new ovm.DefaultRollupStateSolver(
+    signedByDB,
+    signedByDecider
+  )
+  const rollupClient = new ovm.RollupClient(core.newInMemoryDB())
+  unipigWallet = new ovm.UnipigTransitioner(
+    core.newInMemoryDB(),
+    rollupStateSolver,
+    rollupClient,
+    undefined,
+    undefined,
+    wallet
+  )
+  const accountAddress = wallet.address
+  // Connect to the mock aggregator
+  rollupClient.connect(new core.SimpleClient('http://107.22.13.89:3000'))
+  unipigWallet.getBalances('0x' + '00'.repeat(20)).then((res) => { console.log('Heres someones balance!', res) })
+}
+initialize()
