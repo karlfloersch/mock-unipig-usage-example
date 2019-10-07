@@ -18,7 +18,7 @@ async function initialize () {
     signedByDB,
     signedByDecider
   )
-  const rollupClient = new ovm.RollupClient(core.newInMemoryDB())
+  const rollupClient = new ovm.RollupClient(core.newInMemoryDB(), '0x970DfC92096BC15ccA54097946d6509dCdc7A858')
   unipigWallet = new ovm.UnipigTransitioner(
     core.newInMemoryDB(),
     rollupStateSolver,
@@ -29,7 +29,7 @@ async function initialize () {
   )
   const accountAddress = wallet.address
   // Connect to the mock aggregator
-  rollupClient.connect(new core.SimpleClient('http://107.22.13.89:3000'))
+  rollupClient.connect(new core.SimpleClient('http://3.114.115.131:3000'))
   unipigWallet.getBalances('0x' + '00'.repeat(20)).then((res) => { console.log('Heres someones balance!', res) })
 }
 initialize()
